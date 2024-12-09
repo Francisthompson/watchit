@@ -12,7 +12,7 @@ module.exports = {
         foreground: "var(--foreground)",
       },
       fontFamily: {
-        sans: ["Geist Mono", "sans-serif"], // Correct placement
+        sans: ["Geist Mono", "sans-serif"],
       },
     },
   },
