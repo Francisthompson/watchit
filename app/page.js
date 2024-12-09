@@ -1,101 +1,210 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState } from "react";
+
+export default function Page() {
+  const [searchQuery, setSearchQuery] = useState(""); // To store the search input
+  const [results, setResults] = useState([]); // To store title_results
+  const [error, setError] = useState(null); // To handle any errors
+  const [loading, setLoading] = useState(false); // To indicate loading state
+  const [selectedTitleId, setSelectedTitleId] = useState(null); // To track the selected title
+  const [selectedTitleDetails, setSelectedTitleDetails] = useState(null); // To store details of the selected title
+  const [detailsLoading, setDetailsLoading] = useState(false); // Loading state for title sources
+  const [selectedRegion, setSelectedRegion] = useState("US"); // Default to US
+  const [isRegionModalOpen, setIsRegionModalOpen] = useState(false); // Modal visibility
+
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) return; // Prevent empty searches
+    setSearchQuery("");
+    setLoading(true); // Start loading
+    setError(null); // Reset error state
+    setSelectedTitleId(null); // Reset selected title
+    setSelectedTitleDetails(null); // Reset title details when new search starts
+
+    try {
+      const url = `https://api.watchmode.com/v1/search/?apiKey=EpTZ4pQNA8WPTxO2M4LhZ0zMxC2kJ3W95HN3wzNo&search_field=name&search_value=${encodeURIComponent(
+        searchQuery
+      )}`;
+      console.log("Fetching from URL:", url);
+
+      const response = await fetch(url);
+      const data = await response.json();
+      console.log("API Response:", data);
+
+      if (data.title_results) {
+        setResults(data.title_results); // Update with title_results
+      } else {
+        setResults([]); // Clear results if none are found
+      }
+    } catch (err) {
+      console.error("API Error:", err);
+      setError("Failed to fetch results. Please try again.");
+    } finally {
+      setLoading(false); // Stop loading
+    }
+  };
+
+  const fetchTitleSources = async (titleId) => {
+    setDetailsLoading(true); // Start loading
+    setError(null); // Reset error state
+    setSelectedTitleId(titleId); // Set the clicked title ID
+
+    try {
+      const url = `https://api.watchmode.com/v1/title/${titleId}/sources/?apiKey=EpTZ4pQNA8WPTxO2M4LhZ0zMxC2kJ3W95HN3wzNo`;
+      console.log("Fetching title sources from URL:", url);
+
+      const response = await fetch(url);
+      const data = await response.json();
+      console.log("Title Sources Response:", data);
+
+      setSelectedTitleDetails(data); // Update with fetched details
+    } catch (err) {
+      console.error("Title Sources API Error:", err);
+      setError("Failed to fetch title sources. Please try again.");
+    } finally {
+      setDetailsLoading(false); // Stop loading
+    }
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="bg-white/[.05] min-h-screen p-4">
+      {/* Title */}
+      <h1 className="text-5xl text-white-800 mb-5 mt-1 text-center">Watchit</h1>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      {/* Search Bar */}
+      <div className="flex items-center gap-4 mb-8 justify-center">
+        <input
+          type="text"
+          placeholder="Search for a Movie or TV Show"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+          className="w-1/2 p-4 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-white-500 text-black placeholder-gray-500"
+        />
+        <button
+          onClick={() => setIsRegionModalOpen(true)}
+          className="p-2 bg-gray-100 text-black rounded-lg shadow-sm hover:bg-gray-200 ml-5"
+        >
+          Region: {selectedRegion}
+        </button>
+      </div>
+
+      {/* Loading State */}
+      {loading && <p className="mt-4 text-gray-700 text-center">Loading...</p>}
+
+      {/* Error State */}
+      {error && <p className="mt-4 text-red-600 text-center">{error}</p>}
+
+      {/* Results */}
+      <div className="flex gap-8">
+        <ul
+          className="w-1/2 bg-white p-4 rounded-lg shadow-lg space-y-4 overflow-y-auto"
+          style={{ maxHeight: "500px" }}
+        >
+          {results.map((result) => (
+            <li
+              key={result.id}
+              className={`p-4 border border-black/[.5] rounded-lg text-black font-sans shadow-sm cursor-pointer hover:bg-gray-100 ${
+                selectedTitleId === result.id ? "bg-gray-300" : ""
+              }`}
+              onClick={() => fetchTitleSources(result.id)}
+            >
+              <h2 className="font-bold text-xl">{result.name}</h2>
+              <p>
+                {result.type === "movie" ? "Movie" : "TV Show"} ({result.year})
+              </p>
+              {result.imdb_id && (
+                <a
+                  href={`https://www.imdb.com/title/${result.imdb_id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-black hover:underline mt-2"
+                >
+                  View on IMDb
+                </a>
+              )}
+            </li>
+          ))}
+        </ul>
+
+        {/* Title Details */}
+        <div
+          className="w-1/2 h-min bg-white p-4 rounded-lg shadow-lg space-y-4 overflow-y-auto"
+          style={{ maxHeight: "500px" }}
+        >
+          {detailsLoading && <p>Loading details...</p>}
+
+          {selectedTitleDetails ? (
+            <>
+              <h2 className="font-bold text-xl mb-4 text-black">
+                Available On:
+              </h2>
+              <ul className="space-y-2 text-black">
+                {selectedTitleDetails
+                  .filter((source) => source.region === selectedRegion) // Filter by region
+                  .map((source) => (
+                    <li
+                      key={source.source_id}
+                      className="border-b border-t pt-2 border-black/[.5] pb-2"
+                    >
+                      <p>
+                        {source.name} -{" "}
+                        <a
+                          href={source.web_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sky-500 hover:underline"
+                        >
+                          Watch it Here!
+                        </a>
+                      </p>
+                    </li>
+                  ))}
+              </ul>
+              {selectedTitleDetails.filter(
+                (source) => source.region === selectedRegion
+              ).length === 0 && (
+                <p className="text-gray-500">
+                  No sources available for this region.
+                </p>
+              )}
+            </>
+          ) : (
+            !detailsLoading && (
+              <p className="text-gray-400">Select a title to see sources.</p>
+            )
+          )}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
+
+      {/* Region Selector Modal */}
+      {isRegionModalOpen && (
+        <div className="fixed inset-0 bg-black/[.5] flex items-center justify-center">
+          <div className="bg-black/[.5] p-6 rounded-lg shadow-lg text-center space-y-4">
+            <h3 className="text-xl font-bold">Select Your Region</h3>
+            <div className="flex items-center justify-center gap-4">
+              {["CA", "US", "GB"].map((region) => (
+                <button
+                  key={region}
+                  onClick={() => {
+                    setSelectedRegion(region); // Set the selected region
+                    setIsRegionModalOpen(false); // Close modal
+                  }}
+                  className="p-2 text-white rounded-lg hover:bg-lime-600"
+                >
+                  {region}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setIsRegionModalOpen(false)} // Close modal without selection
+              className="p-2 text-white-800 hover:underline"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
