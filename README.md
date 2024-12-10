@@ -13,7 +13,7 @@ Watchit is a user-friendly web application that helps users search for movies an
 ## Technologies Used
 
 - **Frontend**: React and Tailwind CSS
-- **Backend/API**: [Watchmode API](https://www.watchmode.com/api/)
+- **Backend/API**: [Watchmode API](https://api.watchmode.com/)
 - **Styling**: Tailwind CSS with custom font integration
 
 ## Usage
@@ -39,7 +39,7 @@ Navigate to https://watchit-silk.vercel.app/ in a web browser.
 
 ## Acknowledgments
 
-- [Watchmode API](https://www.watchmode.com/api/) for providing movie and TV show data.
+- [Watchmode API](https://api.watchmode.com/) for providing movie and TV show data.
 - [Tailwind CSS](https://tailwindcss.com/) for efficient styling.
 
 ---
