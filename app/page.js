@@ -3,23 +3,23 @@
 import { useState } from "react";
 
 export default function Page() {
-  const [searchQuery, setSearchQuery] = useState(""); // To store the search input
-  const [results, setResults] = useState([]); // To store title_results
-  const [error, setError] = useState(null); // To handle any errors
-  const [loading, setLoading] = useState(false); // To indicate loading state
-  const [selectedTitleId, setSelectedTitleId] = useState(null); // To track the selected title
-  const [selectedTitleDetails, setSelectedTitleDetails] = useState(null); // To store details of the selected title
-  const [detailsLoading, setDetailsLoading] = useState(false); // Loading state for title sources
-  const [selectedRegion, setSelectedRegion] = useState("US"); // Default to US
-  const [isRegionModalOpen, setIsRegionModalOpen] = useState(false); // Modal visibility
+  const [searchQuery, setSearchQuery] = useState("");
+  const [results, setResults] = useState([]);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [selectedTitleId, setSelectedTitleId] = useState(null); // track selected title
+  const [selectedTitleDetails, setSelectedTitleDetails] = useState(null); // store details of selected title
+  const [detailsLoading, setDetailsLoading] = useState(false);
+  const [selectedRegion, setSelectedRegion] = useState("US"); // default to US
+  const [isRegionModalOpen, setIsRegionModalOpen] = useState(false);
 
   const handleSearch = async () => {
-    if (!searchQuery.trim()) return; // Prevent empty searches
+    if (!searchQuery.trim()) return;
     setSearchQuery("");
-    setLoading(true); // Start loading
-    setError(null); // Reset error state
-    setSelectedTitleId(null); // Reset selected title
-    setSelectedTitleDetails(null); // Reset title details when new search starts
+    setLoading(true);
+    setError(null);
+    setSelectedTitleId(null);
+    setSelectedTitleDetails(null);
 
     try {
       const url = `https://api.watchmode.com/v1/search/?apiKey=EpTZ4pQNA8WPTxO2M4LhZ0zMxC2kJ3W95HN3wzNo&search_field=name&search_value=${encodeURIComponent(
@@ -32,7 +32,7 @@ export default function Page() {
       console.log("API Response:", data);
 
       if (data.title_results) {
-        setResults(data.title_results); // Update with title_results
+        setResults(data.title_results);
       } else {
         setResults([]); // Clear results if none are found
       }
@@ -40,14 +40,14 @@ export default function Page() {
       console.error("API Error:", err);
       setError("Failed to fetch results. Please try again.");
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false);
     }
   };
 
   const fetchTitleSources = async (titleId) => {
-    setDetailsLoading(true); // Start loading
-    setError(null); // Reset error state
-    setSelectedTitleId(titleId); // Set the clicked title ID
+    setDetailsLoading(true);
+    setError(null);
+    setSelectedTitleId(titleId);
 
     try {
       const url = `https://api.watchmode.com/v1/title/${titleId}/sources/?apiKey=EpTZ4pQNA8WPTxO2M4LhZ0zMxC2kJ3W95HN3wzNo`;
@@ -57,12 +57,12 @@ export default function Page() {
       const data = await response.json();
       console.log("Title Sources Response:", data);
 
-      setSelectedTitleDetails(data); // Update with fetched details
+      setSelectedTitleDetails(data);
     } catch (err) {
       console.error("Title Sources API Error:", err);
       setError("Failed to fetch title sources. Please try again.");
     } finally {
-      setDetailsLoading(false); // Stop loading
+      setDetailsLoading(false);
     }
   };
 
@@ -187,8 +187,8 @@ export default function Page() {
                 <button
                   key={region}
                   onClick={() => {
-                    setSelectedRegion(region); // Set the selected region
-                    setIsRegionModalOpen(false); // Close modal
+                    setSelectedRegion(region); // Set selected region
+                    setIsRegionModalOpen(false);
                   }}
                   className="p-2 text-white rounded-lg hover:bg-lime-600"
                 >
@@ -197,7 +197,7 @@ export default function Page() {
               ))}
             </div>
             <button
-              onClick={() => setIsRegionModalOpen(false)} // Close modal without selection
+              onClick={() => setIsRegionModalOpen(false)}
               className="p-2 text-white-800 hover:underline"
             >
               Cancel
